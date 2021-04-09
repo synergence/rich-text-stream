@@ -3,14 +3,15 @@ A way to build Roblox rich text without the clutter.
 ```ts
 import { rich } from '@rbxts/rich-text-stream';
 
-const output = rich()    // new builder
-    .a('Hello, ')            // add
-        .b()                     // bold
-        .fc('#ff0000')           // red color
-    .a('world!')             // add
-        .i();                    // italics
+const output = rich()
+    .add('Hello, ')
+        .bold()
+        .fontColor('#ff0000')
+        .fontSize(20)
+    .add('world!')
+        .italics();
 
-print(output); // <font color="#ff0000"><b>Hello, </b></font><i>world!</i>
+print(output); // <font color="#ff0000" size="20"><b>Hello, </b></font><i>world!</i>
 ```
 
 The API is self-documenting, they're named after the Roblox tags.
@@ -21,6 +22,6 @@ There is also a shorthand method for convenience:
 
 ```ts
 rich('Hello!')
-    .b()  // bold
-    .i(); // italics
+    .bold()
+    .italics();
 ```

@@ -1,10 +1,15 @@
 type FontNames = keyof ExcludeMembers<{[R in keyof typeof Enum.Font]: (typeof Enum.Font)[R] extends { Name: string } ? (typeof Enum.Font)[R] : never }, string>;
 
+interface RichTextNode {
+	text: string;
+	attributes: Map<string, Array<string> | undefined>;
+}
+
 /**
  * A rich text creator
  */
 class RichTextStream {
-	private workingString: Array<string> = [];
+	private workingString: Array<RichTextNode> = [];
 
 	public constructor() {
 		const metaTable = getmetatable(this) as LuaMetatable<this>;
@@ -19,47 +24,73 @@ class RichTextStream {
 	 * Convert the stream to a string
 	 */
 	public toString() {
-		return this.workingString.join('');
+		return this.workingString.map(node => {
+			let text = node.text;
+
+			for (const [attribute, properties] of node.attributes) {
+				if (!properties) {
+					text = `<${attribute}>${text}</${attribute}>`;
+					continue;
+				}
+
+				text = `<${attribute} ${properties.join(' ')}>${text}</${attribute}>`;
+			}
+
+			return text;
+		}).join('');
 	}
 
 	/**
 	 * Adds a text to the end of the stream
 	 * @param text The text to add
 	 */
-	public a(text: string) {
-		this.workingString.push(text);
+	public add(text: string) {
+		this.workingString.push({
+			text,
+			attributes: new Map()
+		});
+
 		return this;
+	}
+
+	private lastString() {
+		return this.workingString[this.workingString.size() - 1];
+	}
+
+	private appendAttributeParameter(attribute: string, modifier: string, value: string) {
+		const lastString = this.lastString();
+		lastString.attributes.set(attribute, [...(lastString.attributes.get(attribute) || []), `${modifier}="${value}"`]);
 	}
 
 	/**
 	 * Bolds the text
 	 */
-	public b() {
-		this.workingString[this.workingString.size() - 1] = `<b>${this.workingString[this.workingString.size() - 1]}</b>`;
+	public bold() {
+		this.lastString().attributes.set('b', undefined);
 		return this;
 	}
 
 	/**
 	 * Italicizes the text
 	 */
-	public i() {
-		this.workingString[this.workingString.size() - 1] = `<i>${this.workingString[this.workingString.size() - 1]}</i>`;
+	public italic() {
+		this.lastString().attributes.set('i', undefined);
 		return this;
 	}
 
 	/**
 	 * Underlines the text
 	 */
-	public u() {
-		this.workingString[this.workingString.size() - 1] = `<u>${this.workingString[this.workingString.size() - 1]}</u>`;
+	public underline() {
+		this.lastString().attributes.set('u', undefined);
 		return this;
 	}
 
 	/**
 	 * Strikethroughs the text
 	 */
-	public s() {
-		this.workingString[this.workingString.size() - 1] = `<s>${this.workingString[this.workingString.size() - 1]}</s>`;
+	public strikethrough() {
+		this.lastString().attributes.set('s', undefined);
 		return this;
 	}
 
@@ -67,8 +98,8 @@ class RichTextStream {
 	 * Changes the font size
 	 * @param size The size of the text
 	 */
-	public fs(size: number) {
-		this.workingString[this.workingString.size() - 1] = `<font size="${size}">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontSize(size: number) {
+		this.appendAttributeParameter('font', 'size', tostring(size));
 		return this;
 	}
 
@@ -76,8 +107,8 @@ class RichTextStream {
 	 * Changes the font face
 	 * @param face The font face
 	 */
-	public ff(face: FontNames) {
-		this.workingString[this.workingString.size() - 1] = `<font face="${face}">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontFace(face: FontNames) {
+		this.appendAttributeParameter('font', 'face', face);
 		return this;
 	}
 
@@ -85,8 +116,8 @@ class RichTextStream {
 	 * Changes the font face
 	 * @param face The font face
 	 */
-	 public ffe(face: Enum.Font) {
-		this.workingString[this.workingString.size() - 1] = `<font face="${face.Name}">${this.workingString[this.workingString.size() - 1]}</font>`;
+	 public fontFaceEnum(face: Enum.Font) {
+		this.appendAttributeParameter('font', 'face', face.Name);
 		return this;
 	}
 
@@ -98,8 +129,8 @@ class RichTextStream {
 	 * fc('#ffffff')
 	 * fc('rgb(255,255,255)')
 	 */
-	public fc(color: `#${string}` | `rgb(${number},${number},${number})`) {
-		this.workingString[this.workingString.size() - 1] = `<font color="${color}">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontColor(color: `#${string}` | `rgb(${number},${number},${number})`) {
+		this.appendAttributeParameter('font', 'color', color);
 		return this;
 	}
 
@@ -110,8 +141,8 @@ class RichTextStream {
 	 * @example
 	 * fch('ffffff')
 	 */
-	public fch(color: string) {
-		this.workingString[this.workingString.size() - 1] = `<font color="#${color}">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontColorHex(color: string) {
+		this.appendAttributeParameter('font', 'color', `#${color}`);
 		return this;
 	}
 
@@ -119,8 +150,8 @@ class RichTextStream {
 	 * Changes the font color (Color3)
 	 * @param color The Color3 color
 	 */
-	public fc3(color: Color3) {
-		this.workingString[this.workingString.size() - 1] = `<font color="rgb(${color.R},${color.G},${color.B})">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontColor3(color: Color3) {
+		this.appendAttributeParameter('font', 'color', `rgb(${color.R},${color.G},${color.B})`);
 		return this;
 	}
 
@@ -130,24 +161,26 @@ class RichTextStream {
 	 * @param g The green value
 	 * @param b The blue value
 	 */
-	public fc3i(r: number, g: number, b: number) {
-		this.workingString[this.workingString.size() - 1] = `<font color="rgb(${r},${g},${b})">${this.workingString[this.workingString.size() - 1]}</font>`;
+	public fontColor3Input(r: number, g: number, b: number) {
+		this.appendAttributeParameter('font', 'color', `rgb(${r},${g},${b})`);
 		return this;
 	}
 
 	/**
-	 * Creates a new line
+	 * Creates a new line.
+	 *
+	 * This is a macro for .add('<br />'), so this will count as a new modifying element
 	 */
-	public br() {
-		this.workingString[this.workingString.size() - 1] = `${this.workingString[this.workingString.size() - 1]}<br />`;
+	public breakLine() {
+		this.add('<br />');
 		return this;
 	}
 
 	/**
 	 * Make the text smallcaps
 	 */
-	public sc() {
-		this.workingString[this.workingString.size() - 1] = `<sc>${this.workingString[this.workingString.size() - 1]}</sc>`;
+	public smallCaps() {
+		this.lastString().attributes.set('sc', undefined);
 		return this;
 	}
 }
@@ -157,11 +190,15 @@ class RichTextStream {
  * @returns RichTextStream
  *
  * @example
- * rich().a('Hello, ').b().fc('#ff0000').a('world!').i();
- * // <b><font color="#ff0000">Hello, </font></b><i>world!</i>
+ * const output = rich()
+ *    .add('Hello, ')
+ *        .bold()
+ *        .fontColor('#ff0000')
+ *    .add('world!')
+ *        .italics();
  */
 export default function rich(starting?: string) {
 	const stream = new RichTextStream();
-	if (starting !== undefined) stream.a(starting);
+	if (starting !== undefined) stream.add(starting);
 	return stream;
 }
