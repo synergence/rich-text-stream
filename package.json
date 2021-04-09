@@ -1,0 +1,23 @@
+{
+  "name": "@rbxts/rich-text-stream",
+  "version": "1.0.0",
+  "description": "A Roblox rich text builder",
+  "main": "out/init.lua",
+  "scripts": {
+    "prepublishOnly": "rbxtsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "types": "out/index.d.ts",
+  "files": [
+    "out"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rbxts/compiler-types": "^1.1.1-types.0",
+    "@rbxts/types": "^1.0.469"
+  }
+}
