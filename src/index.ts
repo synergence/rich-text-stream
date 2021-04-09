@@ -53,6 +53,26 @@ class RichTextStream {
 		return this;
 	}
 
+	/**
+	 * Adds a text to the end of the stream, but escape the characters that could break the formatting
+	 * @param text The text to add
+	 */
+	public addEscaped(text: string) {
+		[text] = text.gsub("\"", "&quot;");
+		[text] = text.gsub("<", "&lt;");
+		[text] = text.gsub(">", "&gt;");
+		[text] = text.gsub("&", "&amp;");
+
+		// Apostrophe is not escaped because it isn't used here - escaping it would be pointless
+
+		this.workingString.push({
+			text,
+			attributes: new Map()
+		});
+
+		return this;
+	}
+
 	private lastString() {
 		return this.workingString[this.workingString.size() - 1];
 	}
