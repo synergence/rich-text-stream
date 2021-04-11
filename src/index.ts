@@ -2,7 +2,7 @@ type FontNames = keyof ExcludeMembers<{[R in keyof typeof Enum.Font]: (typeof En
 
 interface RichTextNode {
 	text: string;
-	attributes: Map<string, Array<string> | undefined>;
+	attributes: Map<string, Array<string> | false>;
 }
 
 /**
@@ -86,7 +86,7 @@ class RichTextStream {
 	 * Bolds the text
 	 */
 	public bold() {
-		this.lastString().attributes.set('b', undefined);
+		this.lastString().attributes.set('b', false);
 		return this;
 	}
 
@@ -94,7 +94,7 @@ class RichTextStream {
 	 * Italicizes the text
 	 */
 	public italic() {
-		this.lastString().attributes.set('i', undefined);
+		this.lastString().attributes.set('i', false);
 		return this;
 	}
 
@@ -102,7 +102,7 @@ class RichTextStream {
 	 * Underlines the text
 	 */
 	public underline() {
-		this.lastString().attributes.set('u', undefined);
+		this.lastString().attributes.set('u', false);
 		return this;
 	}
 
@@ -110,7 +110,7 @@ class RichTextStream {
 	 * Strikethroughs the text
 	 */
 	public strikethrough() {
-		this.lastString().attributes.set('s', undefined);
+		this.lastString().attributes.set('s', false);
 		return this;
 	}
 
@@ -200,7 +200,7 @@ class RichTextStream {
 	 * Make the text smallcaps
 	 */
 	public smallCaps() {
-		this.lastString().attributes.set('sc', undefined);
+		this.lastString().attributes.set('sc', false);
 		return this;
 	}
 }
