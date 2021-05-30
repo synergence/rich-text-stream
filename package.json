@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/rich-text-stream",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A Roblox rich text builder",
   "main": "out/init.lua",
   "scripts": {
