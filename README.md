@@ -1,7 +1,7 @@
 # @rbxts/rich-text-stream
 A way to build Roblox rich text without the clutter.
 ```ts
-import { rich } from '@rbxts/rich-text-stream';
+import rich from '@rbxts/rich-text-stream';
 
 // Create rich text
 
